@@ -123,9 +123,9 @@ export default function Board() {
   const pollingRef = useRef<NodeJS.Timeout | null>(null);
   const isFetchingRef = useRef(false);
 
-  // Timezone Countdown Logic
+  // Timezone Countdown Logic (Resets at 4:00 AM Africa/Algiers)
   useEffect(() => {
-    function getTimeUntilMidnight() {
+    function getTimeUntilReset() {
       const now = new Date();
       const tzString = 'Africa/Algiers';
       const formatter = new Intl.DateTimeFormat('en-US', {
@@ -157,14 +157,16 @@ export default function Board() {
           tzParts.second
         );
 
-        const tzMidnight = new Date(
+        const resetHour = 4;
+        const targetDay = tzParts.hour < resetHour ? tzParts.day : tzParts.day + 1;
+        const tzReset = new Date(
           tzParts.year,
           tzParts.month - 1,
-          tzParts.day + 1,
-          0, 0, 0
+          targetDay,
+          resetHour, 0, 0
         );
 
-        const diffMs = tzMidnight.getTime() - tzNow.getTime();
+        const diffMs = tzReset.getTime() - tzNow.getTime();
         const diffSecs = Math.max(0, Math.floor(diffMs / 1000));
 
         const hours = Math.floor(diffSecs / 3600);
@@ -178,9 +180,16 @@ export default function Board() {
         });
       } catch {
         // Local fallback
-        const midnight = new Date();
-        midnight.setHours(24, 0, 0, 0);
-        const diffSecs = Math.max(0, Math.floor((midnight.getTime() - now.getTime()) / 1000));
+        const now = new Date();
+        const resetHour = 4;
+        const targetDay = now.getHours() < resetHour ? now.getDate() : now.getDate() + 1;
+        const fallbackReset = new Date(
+          now.getFullYear(),
+          now.getMonth(),
+          targetDay,
+          resetHour, 0, 0
+        );
+        const diffSecs = Math.max(0, Math.floor((fallbackReset.getTime() - now.getTime()) / 1000));
         const hours = Math.floor(diffSecs / 3600);
         const minutes = Math.floor((diffSecs % 3600) / 60);
         const seconds = diffSecs % 60;
@@ -192,8 +201,8 @@ export default function Board() {
       }
     }
 
-    getTimeUntilMidnight();
-    const interval = setInterval(getTimeUntilMidnight, 1000);
+    getTimeUntilReset();
+    const interval = setInterval(getTimeUntilReset, 1000);
     return () => clearInterval(interval);
   }, []);
 

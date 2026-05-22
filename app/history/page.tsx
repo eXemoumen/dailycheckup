@@ -102,15 +102,42 @@ const COLOR_THEMES: Record<string, { headerBg: string; border: string; text: str
 export default function History() {
   const router = useRouter();
   
-  // Yesterday's date as default
-  const getYesterdayDateString = (): string => {
-    const d = new Date();
-    d.setDate(d.getDate() - 1);
-    return d.toISOString().split('T')[0];
+  // Shifted Algiers Today as maximum allowed date
+  const getShiftedAlgiersTodayString = (): string => {
+    const now = new Date();
+    now.setHours(now.getHours() - 4);
+    try {
+      const formatter = new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'Africa/Algiers',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+      });
+      return formatter.format(now);
+    } catch {
+      return now.toISOString().split('T')[0];
+    }
+  };
+
+  // Yesterday's date as default (shifted Algiers time - 28 hours)
+  const getShiftedAlgiersYesterdayString = (): string => {
+    const now = new Date();
+    now.setHours(now.getHours() - 28);
+    try {
+      const formatter = new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'Africa/Algiers',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+      });
+      return formatter.format(now);
+    } catch {
+      return now.toISOString().split('T')[0];
+    }
   };
 
   const [currentUser, setCurrentUser] = useState<Omit<User, 'pin'> | null>(null);
-  const [selectedDate, setSelectedDate] = useState(getYesterdayDateString());
+  const [selectedDate, setSelectedDate] = useState(getShiftedAlgiersYesterdayString());
   const [users, setUsers] = useState<Omit<User, 'pin'>[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
@@ -212,7 +239,7 @@ export default function History() {
                 type="date"
                 value={selectedDate}
                 onChange={handleDateChange}
-                max={new Date().toISOString().split('T')[0]}
+                max={getShiftedAlgiersTodayString()}
                 className="bg-transparent text-zinc-200 border-none outline-none focus:ring-0 font-bold cursor-pointer text-[10px] p-0"
                 style={{ colorScheme: 'dark' }}
               />

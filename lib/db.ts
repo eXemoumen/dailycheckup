@@ -60,18 +60,25 @@ function writeLocalDB(data: LocalDBSchema) {
 
 // General Helper: Standardize date checking timezone
 // Calculates date in the configured timezone (default Africa/Algiers, UTC+1)
+// The day resets at 4:00 AM in the configured timezone, so any time before 4:00 AM
+// is treated as part of the previous operational day.
 export function getLocalDateString(timezone = 'Africa/Algiers'): string {
   try {
+    const d = new Date();
+    // Shift the date back by 4 hours to align the date boundary with 4:00 AM
+    d.setHours(d.getHours() - 4);
+
     const formatter = new Intl.DateTimeFormat('en-CA', {
       timeZone: timezone,
       year: 'numeric',
       month: '2-digit',
       day: '2-digit',
     });
-    return formatter.format(new Date());
+    return formatter.format(d);
   } catch {
     // Fallback if timezone is invalid
     const d = new Date();
+    d.setHours(d.getHours() - 4);
     return d.toISOString().split('T')[0];
   }
 }
