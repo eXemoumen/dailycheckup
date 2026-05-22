@@ -3,59 +3,99 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { 
-  ArrowLeft, Calendar as CalendarIcon, Loader2, ListTodo, AlertTriangle 
+  ArrowLeft, Calendar as CalendarIcon, Loader2, ListTodo, AlertTriangle, CheckSquare, Activity, Users,
+  Terminal, Zap, Coffee, Gamepad2, Palette, Book, 
+  Target, Flame, Brain, Rocket, Trophy, Compass, 
+  Shield, Heart, Sparkles, Code
 } from 'lucide-react';
-import { Task, User, getLocalDateString } from '@/lib/db';
+import { Task, User } from '@/lib/db';
 import { TaskCard } from '@/components/TaskCard';
 
+// Local avatar mapper for emoji-free design
+const AVATAR_MAP: Record<string, React.ComponentType<{ className?: string; strokeWidth?: number }>> = {
+  '💻': Terminal,
+  '⚡': Zap,
+  '☕': Coffee,
+  '🎮': Gamepad2,
+  '🎨': Palette,
+  '📚': Book,
+  '🎯': Target,
+  '🔥': Flame,
+  '🧠': Brain,
+  '🚀': Rocket,
+  '🍕': Trophy,
+  '🦁': Compass,
+  '🐱': Shield,
+  '🐼': Heart,
+  '🦊': Sparkles,
+  '🦖': Code,
+  'terminal': Terminal,
+  'zap': Zap,
+  'coffee': Coffee,
+  'gamepad': Gamepad2,
+  'palette': Palette,
+  'book': Book,
+  'target': Target,
+  'flame': Flame,
+  'brain': Brain,
+  'rocket': Rocket,
+  'trophy': Trophy,
+  'compass': Compass,
+  'shield': Shield,
+  'heart': Heart,
+  'sparkles': Sparkles,
+  'code': Code,
+};
+
+// Premium desaturated color palettes
 const COLOR_THEMES: Record<string, { headerBg: string; border: string; text: string; shadow: string; glow: string; badge: string }> = {
   indigo: {
-    headerBg: 'bg-indigo-950/20 border-indigo-500/30 text-indigo-400',
-    border: 'border-indigo-500/30',
+    headerBg: 'bg-indigo-950/10 border-indigo-500/20 text-indigo-400',
+    border: 'border-indigo-500/20',
     text: 'text-indigo-400',
-    shadow: 'rgba(99, 102, 241, 0.15)',
-    glow: 'from-indigo-500/15 via-indigo-500/5 to-transparent',
-    badge: 'bg-indigo-500/10 text-indigo-300 border-indigo-500/20',
+    shadow: 'rgba(99, 102, 241, 0.08)',
+    glow: 'from-indigo-500/10 via-indigo-500/2 to-transparent',
+    badge: 'bg-indigo-500/5 text-indigo-300 border-indigo-500/15',
   },
   rose: {
-    headerBg: 'bg-rose-950/20 border-rose-500/30 text-rose-400',
-    border: 'border-rose-500/30',
+    headerBg: 'bg-rose-950/10 border-rose-500/20 text-rose-400',
+    border: 'border-rose-500/20',
     text: 'text-rose-400',
-    shadow: 'rgba(244, 63, 94, 0.15)',
-    glow: 'from-rose-500/15 via-rose-500/5 to-transparent',
-    badge: 'bg-rose-500/10 text-rose-300 border-rose-500/20',
+    shadow: 'rgba(244, 63, 94, 0.08)',
+    glow: 'from-rose-500/10 via-rose-500/2 to-transparent',
+    badge: 'bg-rose-500/5 text-rose-300 border-rose-500/15',
   },
   emerald: {
-    headerBg: 'bg-emerald-950/20 border-emerald-500/30 text-emerald-400',
-    border: 'border-emerald-500/30',
+    headerBg: 'bg-emerald-950/10 border-emerald-500/20 text-emerald-400',
+    border: 'border-emerald-500/20',
     text: 'text-emerald-400',
-    shadow: 'rgba(16, 185, 129, 0.15)',
-    glow: 'from-emerald-500/15 via-emerald-500/5 to-transparent',
-    badge: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20',
+    shadow: 'rgba(16, 185, 129, 0.08)',
+    glow: 'from-emerald-500/10 via-emerald-500/2 to-transparent',
+    badge: 'bg-emerald-500/5 text-emerald-300 border-emerald-500/15',
   },
   amber: {
-    headerBg: 'bg-amber-950/20 border-amber-500/30 text-amber-400',
-    border: 'border-amber-500/30',
+    headerBg: 'bg-amber-950/10 border-amber-500/20 text-amber-400',
+    border: 'border-amber-500/20',
     text: 'text-amber-400',
-    shadow: 'rgba(245, 158, 11, 0.15)',
-    glow: 'from-amber-500/15 via-amber-500/5 to-transparent',
-    badge: 'bg-amber-500/10 text-amber-300 border-amber-500/20',
+    shadow: 'rgba(245, 158, 11, 0.08)',
+    glow: 'from-amber-500/10 via-amber-500/2 to-transparent',
+    badge: 'bg-amber-500/5 text-amber-300 border-amber-500/15',
   },
   purple: {
-    headerBg: 'bg-purple-950/20 border-purple-500/30 text-purple-400',
-    border: 'border-purple-500/30',
+    headerBg: 'bg-purple-950/10 border-purple-500/20 text-purple-400',
+    border: 'border-purple-500/20',
     text: 'text-purple-400',
-    shadow: 'rgba(168, 85, 247, 0.15)',
-    glow: 'from-purple-500/15 via-purple-500/5 to-transparent',
-    badge: 'bg-purple-500/10 text-purple-300 border-purple-500/20',
+    shadow: 'rgba(168, 85, 247, 0.08)',
+    glow: 'from-purple-500/10 via-purple-500/2 to-transparent',
+    badge: 'bg-purple-500/5 text-purple-300 border-purple-500/15',
   },
   cyan: {
-    headerBg: 'bg-cyan-950/20 border-cyan-500/30 text-cyan-400',
-    border: 'border-cyan-500/30',
+    headerBg: 'bg-cyan-950/10 border-cyan-500/20 text-cyan-400',
+    border: 'border-cyan-500/20',
     text: 'text-cyan-400',
-    shadow: 'rgba(6, 182, 212, 0.15)',
-    glow: 'from-cyan-500/15 via-cyan-500/5 to-transparent',
-    badge: 'bg-cyan-500/10 text-cyan-300 border-cyan-500/20',
+    shadow: 'rgba(6, 182, 212, 0.08)',
+    glow: 'from-cyan-500/10 via-cyan-500/2 to-transparent',
+    badge: 'bg-cyan-500/5 text-cyan-300 border-cyan-500/15',
   },
 };
 
@@ -119,154 +159,229 @@ export default function History() {
     }
   };
 
-  // Helper placeholder update functions
+  // Helper placeholder update functions for Read-Only cards
   const noopUpdate = async () => {};
   const noopDelete = async () => {};
 
+  // Stats calculation
+  const totalTasksCount = tasks.length;
+  const completedTasksCount = tasks.filter(t => t.status === 'done').length;
+  const workingTasksCount = tasks.filter(t => t.status === 'working').length;
+  const groupCompletionRate = totalTasksCount > 0 ? Math.round((completedTasksCount / totalTasksCount) * 100) : 0;
+  const activeMembersToday = users.filter(u => tasks.some(t => t.userId === u.id)).length;
+
   return (
-    <div className="flex flex-col min-h-screen bg-gray-950 text-slate-100 pb-16">
-      
-      {/* Navigation Header */}
-      <header className="border-b border-slate-900 bg-slate-900/40 backdrop-blur-xl sticky top-0 z-30">
-        <div className="max-w-[1600px] mx-auto px-4 py-4 sm:px-6 lg:px-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          
-          <div className="flex items-center gap-4">
+    <div className="flex flex-col min-h-[100dvh] bg-[#050505] text-zinc-100 pb-20 relative overflow-hidden">
+      {/* Background Noise & Glowing Mesh Orbs */}
+      <div className="noise-overlay" />
+      <div className="absolute top-[10%] left-[20%] w-[35vw] h-[35vw] max-w-[500px] max-h-[500px] bg-indigo-950/5 rounded-full blur-[130px] pointer-events-none animate-float-slow" />
+      <div className="absolute bottom-[20%] right-[10%] w-[40vw] h-[40vw] max-w-[550px] max-h-[550px] bg-violet-950/5 rounded-full blur-[140px] pointer-events-none animate-float-slow" style={{ animationDelay: '-4s' }} />
+
+      {/* Floating Glass Pill Navbar */}
+      <header className="px-4 pt-6 pb-2 w-full max-w-[1400px] mx-auto z-40">
+        <div className="glass-panel rounded-full px-4 sm:px-6 py-3 flex items-center justify-between border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.6)]">
+          {/* Back to Board Button */}
+          <div className="flex items-center gap-3">
             <button
               onClick={() => router.push('/board')}
-              className="p-2 rounded-xl border border-slate-800 bg-slate-900/60 hover:bg-slate-800 text-slate-400 hover:text-white transition-all cursor-pointer flex items-center gap-1 text-xs font-semibold"
+              className="p-1.5 rounded-full border border-white/5 bg-white/5 hover:bg-white/10 text-zinc-300 hover:text-white transition-all cursor-pointer flex items-center justify-center active:scale-95"
             >
-              <ArrowLeft className="w-4 h-4" />
-              <span>Back to Board</span>
+              <ArrowLeft className="w-3.5 h-3.5" strokeWidth={1.5} />
             </button>
-            
-            <div>
-              <h1 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
+            <div className="hidden xs:block">
+              <h1 className="text-sm font-semibold tracking-tight text-white font-sans flex items-center gap-2">
                 History Archive
               </h1>
-              <p className="text-xs text-slate-500 font-medium">Browse past accountability checkups</p>
             </div>
           </div>
 
           {/* Date selection & calendar picker */}
           <div className="flex items-center gap-3">
-            <div className="relative flex items-center bg-slate-950/80 border border-slate-800 rounded-xl px-3 py-1.5 text-xs">
-              <CalendarIcon className="w-4 h-4 text-slate-400 mr-2.5" />
-              <span className="text-slate-400 mr-2 font-medium">Select Date:</span>
+            <div className="relative flex items-center bg-[#050505]/60 border border-white/5 rounded-full px-4 py-1.5 text-[10px] font-semibold tracking-wider font-sans uppercase">
+              <CalendarIcon className="w-3.5 h-3.5 text-zinc-400 mr-2" strokeWidth={1.5} />
+              <span className="text-zinc-500 mr-2 hidden sm:inline">Select:</span>
               <input
                 type="date"
                 value={selectedDate}
                 onChange={handleDateChange}
                 max={new Date().toISOString().split('T')[0]}
-                className="bg-transparent text-slate-200 border-none outline-none focus:ring-0 font-semibold cursor-pointer text-xs"
+                className="bg-transparent text-zinc-200 border-none outline-none focus:ring-0 font-bold cursor-pointer text-[10px] p-0"
                 style={{ colorScheme: 'dark' }}
               />
             </div>
           </div>
-
         </div>
       </header>
 
-      {/* Main Board Container */}
-      <main className="max-w-[1600px] w-full mx-auto px-4 mt-8 sm:px-6 lg:px-8 flex-1 flex flex-col">
+      {/* Main Board Layout */}
+      <main className="max-w-[1400px] w-full mx-auto px-4 mt-6 flex-1 flex flex-col z-10">
         
+        {/* Bento Stats Row */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-8">
+          {/* Card 1: Completion rate progress */}
+          <div className="double-bezel-outer rounded-[1.75rem] p-1">
+            <div className="double-bezel-inner rounded-[calc(1.75rem-0.25rem)] p-5 flex items-center gap-4">
+              <div className="w-10 h-10 rounded-full bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
+                <CheckSquare className="w-5 h-5" strokeWidth={1.5} />
+              </div>
+              <div className="flex-1">
+                <span className="block text-[9px] font-semibold text-zinc-500 uppercase tracking-widest font-mono">Day Progress</span>
+                <span className="block text-xl font-bold tracking-tight text-white font-mono mt-0.5">{groupCompletionRate}%</span>
+                <div className="w-full bg-white/5 h-1.5 rounded-full mt-2 overflow-hidden border border-white/5">
+                  <div 
+                    className="bg-indigo-500 h-full rounded-full transition-all duration-700 ease-out" 
+                    style={{ width: `${groupCompletionRate}%` }}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Card 2: Status breakdown */}
+          <div className="double-bezel-outer rounded-[1.75rem] p-1">
+            <div className="double-bezel-inner rounded-[calc(1.75rem-0.25rem)] p-5 flex items-center gap-4">
+              <div className="w-10 h-10 rounded-full bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
+                <Activity className="w-5 h-5" strokeWidth={1.5} />
+              </div>
+              <div className="flex-1">
+                <span className="block text-[9px] font-semibold text-zinc-500 uppercase tracking-widest font-mono">Day Velocity</span>
+                <span className="block text-xl font-bold tracking-tight text-white font-mono mt-0.5">
+                  {completedTasksCount} / {totalTasksCount} Done
+                </span>
+                <p className="text-[10px] text-zinc-500 mt-1 font-mono">
+                  {workingTasksCount} tasks ended in working state
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Card 3: Board Stats */}
+          <div className="double-bezel-outer rounded-[1.75rem] p-1 sm:col-span-2 lg:col-span-1">
+            <div className="double-bezel-inner rounded-[calc(1.75rem-0.25rem)] p-5 flex items-center gap-4">
+              <div className="w-10 h-10 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+                <Users className="w-5 h-5" strokeWidth={1.5} />
+              </div>
+              <div className="flex-1">
+                <span className="block text-[9px] font-semibold text-zinc-500 uppercase tracking-widest font-mono">Lanes Tracked</span>
+                <span className="block text-xl font-bold tracking-tight text-white font-mono mt-0.5">
+                  {activeMembersToday} Active Lanes
+                </span>
+                <p className="text-[10px] text-zinc-500 mt-1 font-mono">
+                  Archived state snapshot for user directory
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Mobile Tab Selectors (only visible on mobile screens < md) */}
-        <div className="md:hidden flex overflow-x-auto gap-2 pb-3 mb-4 scrollbar-none">
+        <div className="md:hidden flex overflow-x-auto gap-2 pb-3 mb-5 scrollbar-none">
           {users.map((user) => {
             const isActive = activeMobileUserId === user.id;
             const theme = COLOR_THEMES[user.color] || COLOR_THEMES.indigo;
+            const UserAvIcon = AVATAR_MAP[user.avatar] || Terminal;
             return (
               <button
                 key={user.id}
                 onClick={() => setActiveMobileUserId(user.id)}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap border transition-all cursor-pointer ${
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-xs font-semibold whitespace-nowrap border transition-all cursor-pointer ${
                   isActive 
-                    ? `bg-slate-900 ${theme.border} ${theme.text}` 
-                    : 'bg-slate-900/40 border-slate-800/60 text-slate-400'
+                    ? `bg-zinc-900 border-white/20 text-white` 
+                    : 'bg-zinc-950/40 border-white/5 text-zinc-500'
                 }`}
               >
-                <span>{user.avatar}</span>
+                <UserAvIcon className={`w-3.5 h-3.5 ${isActive ? theme.text : 'text-zinc-500'}`} strokeWidth={1.5} />
                 <span>{user.name}</span>
               </button>
             );
           })}
         </div>
 
+        {/* Lanes Grid Layout */}
         {loading ? (
           <div className="flex flex-col flex-1 items-center justify-center py-32">
-            <Loader2 className="w-8 h-8 text-indigo-500 animate-spin" />
-            <p className="mt-4 text-slate-400 font-medium text-xs">Retrieving historical state...</p>
+            <Loader2 className="w-8 h-8 text-zinc-500 animate-spin" strokeWidth={1.5} />
+            <p className="mt-4 text-zinc-400 font-medium text-xs tracking-wider uppercase font-mono">RETRIEVING SNAPSHOT...</p>
           </div>
         ) : users.length === 0 ? (
-          <div className="flex flex-col flex-1 items-center justify-center py-20 border border-dashed border-slate-800 rounded-2xl bg-slate-900/10 max-w-md mx-auto w-full mt-10">
-            <AlertTriangle className="w-12 h-12 text-slate-500 mb-4" />
-            <h3 className="text-base font-bold text-slate-300">No board history</h3>
-            <p className="text-xs text-slate-500 text-center px-6 mt-1.5">
-              There is no record of users or activities for this date.
+          <div className="flex flex-col flex-1 items-center justify-center py-20 border border-dashed border-white/5 rounded-[2.5rem] bg-white/[0.01] max-w-md mx-auto w-full mt-10 p-6">
+            <AlertTriangle className="w-10 h-10 text-zinc-600 mb-4" strokeWidth={1.5} />
+            <h3 className="text-sm font-semibold text-zinc-300">No board snapshot</h3>
+            <p className="text-xs text-zinc-500 text-center px-4 mt-2 leading-relaxed">
+              There is no recorded checkup activity on this date.
             </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 items-start">
             
-            {/* Render Columns */}
+            {/* Render Bento Lanes (Filtered for mobile view) */}
             {users.map((user) => {
               const theme = COLOR_THEMES[user.color] || COLOR_THEMES.indigo;
               const userTasks = tasks.filter(t => t.userId === user.id);
               
+              // Status counts
               const doneCount = userTasks.filter(t => t.status === 'done').length;
               const totalCount = userTasks.length;
               
+              // Mobile visibility toggle
               const mobileHiddenClass = activeMobileUserId === user.id ? 'block' : 'hidden md:block';
+              const UserLaneAvatar = AVATAR_MAP[user.avatar] || Terminal;
 
               return (
                 <div 
                   key={user.id} 
-                  className={`flex flex-col rounded-2xl border bg-slate-900/35 overflow-hidden ${theme.border} ${mobileHiddenClass} relative shadow-xl`}
+                  className={`double-bezel-outer rounded-[2.5rem] p-1.5 ${mobileHiddenClass} relative transition-all duration-500`}
                 >
-                  {/* Accent glow background */}
-                  <div className={`absolute top-0 inset-x-0 h-24 bg-gradient-to-b ${theme.glow} pointer-events-none`} />
+                  <div className="double-bezel-inner rounded-[calc(2.5rem-0.375rem)] overflow-hidden relative">
+                    {/* Glowing background accent */}
+                    <div className={`absolute top-0 inset-x-0 h-24 bg-gradient-to-b ${theme.glow} pointer-events-none`} />
 
-                  {/* Column Header */}
-                  <div className="px-5 py-4 border-b border-slate-900/60 flex items-center justify-between bg-slate-950/40 relative z-10">
-                    <div className="flex items-center gap-3">
-                      <div className="text-2xl p-1 bg-slate-900/80 rounded-xl border border-slate-800/80 shadow-md">
-                        {user.avatar}
-                      </div>
-                      <div>
-                        <h3 className="font-bold text-sm text-slate-200">
-                          {user.name}
-                        </h3>
-                        <p className="text-[10px] text-slate-500 font-medium uppercase tracking-wider">
-                          Historical Column
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Progress Badge */}
-                    <div className={`text-[11px] font-bold px-2.5 py-1 rounded-full border ${theme.badge}`}>
-                      {doneCount}/{totalCount} Completed
-                    </div>
-                  </div>
-
-                  {/* Column Content */}
-                  <div className="p-4 flex flex-col gap-4 relative z-10 min-h-[250px]">
-                    <div className="flex flex-col gap-3 max-h-[550px] overflow-y-auto pr-1">
-                      {userTasks.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center py-12 text-center border border-dashed border-slate-800/40 rounded-xl bg-slate-950/15">
-                          <ListTodo className="w-8 h-8 text-slate-600 mb-2" />
-                          <p className="text-[11px] text-slate-500 font-medium">No tasks logged on this day</p>
+                    {/* Column Header */}
+                    <div className="px-5 py-4 border-b border-white/5 flex items-center justify-between bg-zinc-950/30 relative z-10">
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-xl bg-zinc-950/80 border border-white/5 flex items-center justify-center text-zinc-200">
+                          <UserLaneAvatar className="w-4 h-4 text-zinc-200" strokeWidth={1.5} />
                         </div>
-                      ) : (
-                        userTasks.map((task) => (
-                          <TaskCard
-                            key={task.id}
-                            task={task}
-                            currentUserId={currentUser?.id || null}
-                            isReadOnly={true}
-                            onUpdate={noopUpdate}
-                            onDelete={noopDelete}
-                          />
-                        ))
-                      )}
+                        <div>
+                          <h3 className="font-semibold text-xs text-zinc-200 flex items-center gap-1.5 font-sans">
+                            {user.name}
+                          </h3>
+                          <p className="text-[9px] text-zinc-500 font-semibold uppercase tracking-wider font-mono mt-0.5">
+                            Snapshot Lane
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Progress Badge */}
+                      <div className={`text-[10px] font-bold font-mono px-2.5 py-1 rounded-full border ${theme.badge}`}>
+                        {doneCount}/{totalCount}
+                      </div>
+                    </div>
+
+                    {/* Column Content */}
+                    <div className="p-4 flex flex-col gap-4 relative z-10 min-h-[250px]">
+                      
+                      {/* Task list inside this column */}
+                      <div className="flex flex-col gap-3 max-h-[500px] overflow-y-auto pr-1">
+                        {userTasks.length === 0 ? (
+                          <div className="flex flex-col items-center justify-center py-16 text-center border border-dashed border-white/5 rounded-2xl bg-white/[0.01]">
+                            <ListTodo className="w-7 h-7 text-zinc-600 mb-2.5" strokeWidth={1.5} />
+                            <p className="text-[10px] text-zinc-500 font-semibold tracking-wide uppercase font-mono">No tasks logged</p>
+                          </div>
+                        ) : (
+                          userTasks.map((task) => (
+                            <TaskCard
+                              key={task.id}
+                              task={task}
+                              currentUserId={null}
+                              isReadOnly={true}
+                              onUpdate={noopUpdate}
+                              onDelete={noopDelete}
+                            />
+                          ))
+                        )}
+                      </div>
+
                     </div>
                   </div>
                 </div>

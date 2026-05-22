@@ -1,38 +1,48 @@
 @import "tailwindcss";
 
 :root {
-  --background: #030712;
-  --foreground: #f3f4f6;
-  --card-bg: rgba(17, 24, 39, 0.7);
-  --border-color: rgba(255, 255, 255, 0.08);
+  --background: #050505;
+  --foreground: #f4f4f5;
+  --card-bg: rgba(9, 9, 11, 0.4);
+  --border-color: rgba(255, 255, 255, 0.06);
 }
 
 @theme {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-outfit), system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), monospace;
   
-  --animate-pulse-glow: pulse-glow 2.5s infinite ease-in-out;
-  --animate-float: float 6s infinite ease-in-out;
+  --animate-pulse-glow: pulse-glow 3s infinite ease-in-out;
+  --animate-float-slow: float-slow 8s infinite ease-in-out;
+  --animate-mesh-rotate: mesh-rotate 25s infinite linear;
   
   @keyframes pulse-glow {
     0%, 100% {
-      box-shadow: 0 0 15px rgba(245, 158, 11, 0.35);
-      border-color: rgba(245, 158, 11, 0.6);
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.03);
+      border-color: rgba(255, 255, 255, 0.06);
     }
     50% {
-      box-shadow: 0 0 5px rgba(245, 158, 11, 0.1);
-      border-color: rgba(245, 158, 11, 0.2);
+      box-shadow: 0 0 25px rgba(255, 255, 255, 0.09);
+      border-color: rgba(255, 255, 255, 0.12);
     }
   }
 
-  @keyframes float {
+  @keyframes float-slow {
     0%, 100% {
-      transform: translateY(0);
+      transform: translateY(0px) scale(1);
     }
     50% {
-      transform: translateY(-8px);
+      transform: translateY(-12px) scale(1.02);
+    }
+  }
+  
+  @keyframes mesh-rotate {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
     }
   }
 }
@@ -42,64 +52,92 @@ body {
   color: var(--foreground);
   font-family: var(--font-sans), system-ui, sans-serif;
   overflow-x: hidden;
-  background-image: 
-    radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.12) 0px, transparent 50%),
-    radial-gradient(at 100% 0%, rgba(236, 72, 153, 0.1) 0px, transparent 50%),
-    radial-gradient(at 50% 100%, rgba(16, 185, 129, 0.05) 0px, transparent 50%);
-  background-attachment: fixed;
+  position: relative;
+  min-height: 100dvh;
 }
 
-/* Glassmorphism templates */
+/* Background Noise overlay applied to a fixed container */
+.noise-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 5;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.02'/%3E%3C/svg%3E");
+  pointer-events: none;
+}
+
+/* Glassmorphism Refraction and Highlights */
 .glass-panel {
-  background: rgba(10, 15, 30, 0.7);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--border-color);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  background: rgba(9, 9, 11, 0.6);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 24px 60px -15px rgba(0, 0, 0, 0.8),
+              inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
 }
 
 .glass-card {
-  background: rgba(17, 24, 39, 0.5);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.04);
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  background: rgba(9, 9, 11, 0.3);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3),
+              inset 0 1px 0 0 rgba(255, 255, 255, 0.04);
+  transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .glass-card:hover {
-  border-color: rgba(255, 255, 255, 0.1);
-  background: rgba(17, 24, 39, 0.65);
+  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(9, 9, 11, 0.45);
+  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.45),
+              inset 0 1px 0 0 rgba(255, 255, 255, 0.06);
+}
+
+/* Double-Bezel nested architecture classes */
+.double-bezel-outer {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.8),
+              inset 0 1px 0 0 rgba(255, 255, 255, 0.03);
+}
+
+.double-bezel-inner {
+  background: rgba(9, 9, 11, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.05);
 }
 
 /* Custom Scrollbars */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(10, 15, 30, 0.3);
+  background: rgba(9, 9, 11, 0.3);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.08);
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.18);
 }
 
 /* Status colors and glowing animations */
 .glow-todo {
-  box-shadow: 0 0 10px rgba(100, 116, 139, 0.15);
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.01);
 }
 
 .glow-working {
-  animation: var(--animate-pulse-glow);
+  box-shadow: 0 0 20px rgba(245, 158, 11, 0.12),
+              inset 0 1px 0 0 rgba(245, 158, 11, 0.05);
+  animation: pulse-glow 3s infinite ease-in-out;
 }
 
 .glow-done {
-  box-shadow: 0 0 12px rgba(16, 185, 129, 0.2);
-  border-color: rgba(16, 185, 129, 0.4);
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.1),
+              inset 0 1px 0 0 rgba(16, 185, 129, 0.05);
+  border-color: rgba(16, 185, 129, 0.25);
 }

@@ -3,25 +3,108 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Lock, User, Sparkles, ArrowRight, Loader2, Check } from 'lucide-react';
+import { 
+  Lock, User, Sparkles, ArrowRight, Loader2, Check,
+  Terminal, Zap, Coffee, Gamepad2, Palette, Book, 
+  Target, Flame, Brain, Rocket, Trophy, Compass, 
+  Shield, Heart, Code
+} from 'lucide-react';
+
+export const AVATAR_MAP: Record<string, React.ComponentType<{ className?: string; strokeWidth?: number }>> = {
+  '💻': Terminal,
+  '⚡': Zap,
+  '☕': Coffee,
+  '🎮': Gamepad2,
+  '🎨': Palette,
+  '📚': Book,
+  '🎯': Target,
+  '🔥': Flame,
+  '🧠': Brain,
+  '🚀': Rocket,
+  '🍕': Trophy,
+  '🦁': Compass,
+  '🐱': Shield,
+  '🐼': Heart,
+  '🦊': Sparkles,
+  '🦖': Code,
+  'terminal': Terminal,
+  'zap': Zap,
+  'coffee': Coffee,
+  'gamepad': Gamepad2,
+  'palette': Palette,
+  'book': Book,
+  'target': Target,
+  'flame': Flame,
+  'brain': Brain,
+  'rocket': Rocket,
+  'trophy': Trophy,
+  'compass': Compass,
+  'shield': Shield,
+  'heart': Heart,
+  'sparkles': Sparkles,
+  'code': Code,
+};
 
 const COLORS = [
-  { id: 'indigo', name: 'Indigo Dream', value: 'from-indigo-500 to-blue-600', shadow: 'rgba(99, 102, 241, 0.4)' },
-  { id: 'rose', name: 'Rose Sunset', value: 'from-rose-500 to-pink-600', shadow: 'rgba(244, 63, 94, 0.4)' },
-  { id: 'emerald', name: 'Emerald Aurora', value: 'from-emerald-500 to-teal-600', shadow: 'rgba(16, 185, 129, 0.4)' },
-  { id: 'amber', name: 'Amber Fire', value: 'from-amber-500 to-orange-600', shadow: 'rgba(245, 158, 11, 0.4)' },
-  { id: 'purple', name: 'Purple Nebula', value: 'from-purple-500 to-fuchsia-600', shadow: 'rgba(168, 85, 247, 0.4)' },
-  { id: 'cyan', name: 'Cyan Wave', value: 'from-cyan-500 to-blue-500', shadow: 'rgba(6, 182, 212, 0.4)' },
+  { id: 'indigo', name: 'Indigo Dream', value: 'from-indigo-600 to-violet-700', shadow: 'rgba(99, 102, 241, 0.3)' },
+  { id: 'rose', name: 'Rose Sunset', value: 'from-rose-500 to-orange-600', shadow: 'rgba(244, 63, 94, 0.3)' },
+  { id: 'emerald', name: 'Emerald Aurora', value: 'from-emerald-500 to-teal-600', shadow: 'rgba(16, 185, 129, 0.3)' },
+  { id: 'amber', name: 'Amber Fire', value: 'from-amber-500 to-yellow-600', shadow: 'rgba(245, 158, 11, 0.3)' },
+  { id: 'purple', name: 'Purple Nebula', value: 'from-purple-600 to-pink-700', shadow: 'rgba(168, 85, 247, 0.3)' },
+  { id: 'cyan', name: 'Cyan Wave', value: 'from-cyan-500 to-blue-600', shadow: 'rgba(6, 182, 212, 0.3)' },
 ];
 
-const AVATARS = ['🚀', '💻', '🧠', '⚡', '☕', '🎮', '🎨', '📚', '🍕', '🎯', '🔥', '🦁', '🐱', '🐼', '🦊', '🦖'];
+const AVATARS = [
+  { id: 'rocket', icon: Rocket },
+  { id: 'terminal', icon: Terminal },
+  { id: 'brain', icon: Brain },
+  { id: 'zap', icon: Zap },
+  { id: 'coffee', icon: Coffee },
+  { id: 'gamepad', icon: Gamepad2 },
+  { id: 'palette', icon: Palette },
+  { id: 'book', icon: Book },
+  { id: 'target', icon: Target },
+  { id: 'flame', icon: Flame },
+  { id: 'trophy', icon: Trophy },
+  { id: 'compass', icon: Compass },
+  { id: 'shield', icon: Shield },
+  { id: 'heart', icon: Heart },
+  { id: 'sparkles', icon: Sparkles },
+  { id: 'code', icon: Code },
+];
+
+// Motion configurations
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.08,
+      delayChildren: 0.1,
+    }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20, filter: 'blur(6px)' },
+  visible: {
+    opacity: 1,
+    y: 0,
+    filter: 'blur(0px)',
+    transition: {
+      type: 'spring',
+      stiffness: 100,
+      damping: 22
+    }
+  }
+};
 
 export default function Home() {
   const router = useRouter();
   const [name, setName] = useState('');
   const [pin, setPin] = useState('');
   const [selectedColor, setSelectedColor] = useState(COLORS[0].id);
-  const [selectedAvatar, setSelectedAvatar] = useState(AVATARS[0]);
+  const [selectedAvatar, setSelectedAvatar] = useState(AVATARS[0].id);
   const [error, setError] = useState<string | null>(null);
   const [isPageLoading, setIsPageLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -89,9 +172,10 @@ export default function Home() {
 
   if (isPageLoading) {
     return (
-      <div className="flex flex-col flex-1 items-center justify-center bg-gray-950 min-h-screen">
-        <Loader2 className="w-10 h-10 text-indigo-500 animate-spin" />
-        <p className="mt-4 text-slate-400 font-medium text-sm">Initializing daily checkup...</p>
+      <div className="flex flex-col flex-1 items-center justify-center bg-[#050505] min-h-[100dvh]">
+        <div className="noise-overlay" />
+        <Loader2 className="w-8 h-8 text-zinc-500 animate-spin" strokeWidth={1.5} />
+        <p className="mt-4 text-zinc-400 font-medium text-xs tracking-wider">INITIALIZING BOARD...</p>
       </div>
     );
   }
@@ -99,184 +183,191 @@ export default function Home() {
   const activeColorObj = COLORS.find(c => c.id === selectedColor) || COLORS[0];
 
   return (
-    <div className="flex flex-col flex-1 items-center justify-center px-4 py-16 sm:px-6 lg:px-8 relative min-h-screen">
-      {/* Decorative ambient glowing orbs */}
-      <div className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2 w-96 h-96 bg-fuchsia-600/10 rounded-full blur-3xl pointer-events-none" />
+    <div className="flex flex-col flex-1 items-center justify-center px-4 py-24 sm:px-6 lg:px-8 relative min-h-[100dvh] overflow-hidden bg-[#050505]">
+      {/* Noise Overlay */}
+      <div className="noise-overlay" />
 
-      <div className="w-full max-w-lg z-10">
-        {/* Title */}
-        <div className="text-center mb-8">
+      {/* Dynamic ambient glowing mesh orbs (GPU accelerated animations) */}
+      <div className="absolute top-[10%] left-[10%] w-[40vw] h-[40vw] max-w-[600px] max-h-[600px] bg-indigo-900/10 rounded-full blur-[140px] pointer-events-none animate-float-slow" />
+      <div className="absolute bottom-[10%] right-[10%] w-[35vw] h-[35vw] max-w-[500px] max-h-[500px] bg-emerald-950/10 rounded-full blur-[120px] pointer-events-none animate-float-slow" style={{ animationDelay: '-3s' }} />
+
+      <motion.div 
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="w-full max-w-[460px] z-10"
+      >
+        {/* Eyebrow and Headline */}
+        <div className="text-center mb-10">
           <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-indigo-500/20 bg-indigo-500/5 text-indigo-400 text-xs font-semibold tracking-wide mb-3"
+            variants={itemVariants}
+            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-white/5 bg-white/5 text-zinc-300 text-[10px] uppercase tracking-[0.2em] font-medium mb-4"
           >
-            <Sparkles className="w-3.5 h-3.5" />
-            Accountability for friends
+            <Sparkles className="w-3 h-3 text-indigo-400" strokeWidth={1.5} />
+            Accountability Core
           </motion.div>
           
           <motion.h1
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="text-4xl sm:text-5xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent"
+            variants={itemVariants}
+            className="text-4xl font-semibold tracking-tight text-white font-sans"
           >
             Daily Checkup
           </motion.h1>
           <motion.p
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="mt-3 text-slate-400 text-[15px] max-w-sm mx-auto"
+            variants={itemVariants}
+            className="mt-3 text-zinc-400 text-sm max-w-xs mx-auto leading-relaxed"
           >
-            Share your daily to-do list, see what your friends are working on, and build consistent habits together.
+            A high-fidelity space to broadcast your progress, align with peers, and design habits.
           </motion.p>
         </div>
 
-        {/* Login Card */}
+        {/* Double-Bezel Card Container */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.4, delay: 0.2 }}
-          className="w-full rounded-2xl border border-slate-800/80 bg-slate-900/60 backdrop-blur-xl p-6 sm:p-8 shadow-2xl"
+          variants={itemVariants}
+          className="double-bezel-outer rounded-[2rem] p-1.5"
         >
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Error Notification */}
-            <AnimatePresence>
-              {error && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0 }}
-                  className="p-3.5 rounded-xl border border-rose-500/20 bg-rose-500/10 text-rose-300 text-sm font-medium"
-                >
-                  {error}
-                </motion.div>
-              )}
-            </AnimatePresence>
+          <div className="double-bezel-inner rounded-[calc(2rem-0.375rem)] p-6 sm:p-8 space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-5">
+              {/* Error Alert */}
+              <AnimatePresence>
+                {error && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0, y: -10 }}
+                    animate={{ opacity: 1, height: 'auto', y: 0 }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="p-3.5 rounded-2xl border border-rose-500/10 bg-rose-500/5 text-rose-300 text-xs font-medium"
+                  >
+                    {error}
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
-            {/* Inputs */}
-            <div className="space-y-4">
-              <div>
-                <label htmlFor="name" className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
-                  Name / Username
-                </label>
-                <div className="relative">
-                  <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-500 pointer-events-none">
-                    <User className="w-4 h-4" />
-                  </span>
-                  <input
-                    id="name"
-                    type="text"
-                    required
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="Enter your name"
-                    className="w-full bg-slate-950/80 border border-slate-800 focus:border-indigo-500 rounded-xl pl-10 pr-4 py-3 text-slate-100 placeholder-slate-500 focus:outline-none transition-colors text-sm"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label htmlFor="pin" className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
-                  4-Digit Access PIN
-                </label>
-                <div className="relative">
-                  <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-500 pointer-events-none">
-                    <Lock className="w-4 h-4" />
-                  </span>
-                  <input
-                    id="pin"
-                    type="password"
-                    pattern="\d*"
-                    maxLength={4}
-                    required
-                    value={pin}
-                    onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))}
-                    placeholder="••••"
-                    className="w-full bg-slate-950/80 border border-slate-800 focus:border-indigo-500 rounded-xl pl-10 pr-4 py-3 text-slate-100 placeholder-slate-500 focus:outline-none transition-colors text-sm tracking-widest"
-                  />
-                </div>
-                <p className="mt-1.5 text-[11px] text-slate-500">
-                  New users? Setting a PIN now will lock this username to your device.
-                </p>
-              </div>
-            </div>
-
-            {/* Collapsible Profile setup (For New User customisation) */}
-            <div className="border-t border-slate-800/80 pt-5 space-y-5">
-              <div>
-                <span className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
-                  Profile Style <span className="text-slate-500 font-normal lowercase">(only for new signups)</span>
-                </span>
-                
-                {/* Avatar emoji picker */}
-                <div className="mb-4">
-                  <span className="block text-[11px] font-medium text-slate-400 mb-2">Select Avatar</span>
-                  <div className="grid grid-cols-8 gap-2 bg-slate-950/40 p-2 border border-slate-800/50 rounded-xl max-h-[96px] overflow-y-auto">
-                    {AVATARS.map((av) => (
-                      <button
-                        key={av}
-                        type="button"
-                        onClick={() => setSelectedAvatar(av)}
-                        className={`text-xl p-1.5 rounded-lg transition-all hover:bg-slate-800 cursor-pointer ${
-                          selectedAvatar === av ? 'bg-slate-800 border border-slate-700/80 scale-110 shadow-md' : 'border border-transparent'
-                        }`}
-                      >
-                        {av}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Color themes */}
+              {/* Input Fields */}
+              <div className="space-y-4">
                 <div>
-                  <span className="block text-[11px] font-medium text-slate-400 mb-2">Select Column Glow Theme</span>
-                  <div className="grid grid-cols-6 gap-2">
-                    {COLORS.map((col) => (
-                      <button
-                        key={col.id}
-                        type="button"
-                        onClick={() => setSelectedColor(col.id)}
-                        title={col.name}
-                        className={`h-9 w-full rounded-xl bg-gradient-to-r ${col.value} relative overflow-hidden transition-all hover:scale-105 cursor-pointer`}
-                      >
-                        {selectedColor === col.id && (
-                          <span className="absolute inset-0 flex items-center justify-center bg-black/25">
-                            <Check className="w-4 h-4 text-white" />
-                          </span>
-                        )}
-                      </button>
-                    ))}
+                  <label htmlFor="name" className="block text-[10px] font-semibold text-zinc-400 uppercase tracking-wider mb-2">
+                    Name / Identity
+                  </label>
+                  <div className="relative">
+                    <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-zinc-500 pointer-events-none">
+                      <User className="w-4 h-4" strokeWidth={1.5} />
+                    </span>
+                    <input
+                      id="name"
+                      type="text"
+                      required
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="e.g. Abdelmoumen"
+                      className="w-full bg-[#050505]/40 border border-white/5 hover:border-white/10 focus:border-white/20 rounded-xl pl-10 pr-4 py-3 text-zinc-100 placeholder-zinc-600 focus:outline-none transition-all text-xs"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label htmlFor="pin" className="block text-[10px] font-semibold text-zinc-400 uppercase tracking-wider mb-2">
+                    4-Digit Session PIN
+                  </label>
+                  <div className="relative">
+                    <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-zinc-500 pointer-events-none">
+                      <Lock className="w-4 h-4" strokeWidth={1.5} />
+                    </span>
+                    <input
+                      id="pin"
+                      type="password"
+                      pattern="\d*"
+                      maxLength={4}
+                      required
+                      value={pin}
+                      onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))}
+                      placeholder="••••"
+                      className="w-full bg-[#050505]/40 border border-white/5 hover:border-white/10 focus:border-white/20 rounded-xl pl-10 pr-4 py-3 text-zinc-100 placeholder-zinc-600 focus:outline-none transition-all text-xs tracking-widest"
+                    />
+                  </div>
+                  <p className="mt-2 text-[10px] text-zinc-500 leading-normal">
+                    First-time logging in? This pin reserves your name on this client device.
+                  </p>
+                </div>
+              </div>
+
+              {/* Style customizers for new members */}
+              <div className="border-t border-white/5 pt-5 space-y-4">
+                <div>
+                  <span className="block text-[10px] font-semibold text-zinc-400 uppercase tracking-wider mb-3">
+                    Style configuration <span className="text-zinc-600 font-normal lowercase">(new members)</span>
+                  </span>
+                  
+                  {/* Custom Glass Avatar Picker */}
+                  <div className="mb-4">
+                    <span className="block text-[10px] font-medium text-zinc-400 mb-2">Choose Avatar Symbol</span>
+                    <div className="grid grid-cols-8 gap-2 bg-[#050505]/40 p-2 border border-white/5 rounded-xl max-h-[105px] overflow-y-auto">
+                      {AVATARS.map((av) => {
+                        const IconComp = av.icon;
+                        const isSelected = selectedAvatar === av.id;
+                        return (
+                          <button
+                            key={av.id}
+                            type="button"
+                            onClick={() => setSelectedAvatar(av.id)}
+                            className={`flex items-center justify-center p-2 rounded-lg transition-all duration-300 cursor-pointer ${
+                              isSelected 
+                                ? 'bg-white/10 border border-white/10 scale-105 shadow-sm text-white' 
+                                : 'border border-transparent text-zinc-500 hover:text-zinc-300 hover:bg-white/5'
+                            }`}
+                          >
+                            <IconComp className="w-4 h-4" strokeWidth={1.5} />
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Gradient Glow themes */}
+                  <div>
+                    <span className="block text-[10px] font-medium text-zinc-400 mb-2">Column Highlight Color</span>
+                    <div className="grid grid-cols-6 gap-2">
+                      {COLORS.map((col) => (
+                        <button
+                          key={col.id}
+                          type="button; button"
+                          onClick={() => setSelectedColor(col.id)}
+                          title={col.name}
+                          className={`h-7 w-full rounded-lg bg-gradient-to-r ${col.value} relative overflow-hidden transition-all duration-300 hover:scale-105 cursor-pointer border border-white/5`}
+                        >
+                          {selectedColor === col.id && (
+                            <span className="absolute inset-0 flex items-center justify-center bg-black/25">
+                              <Check className="w-3.5 h-3.5 text-white" strokeWidth={2.5} />
+                            </span>
+                          )}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            {/* Submit */}
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className={`w-full py-3.5 px-4 rounded-xl font-semibold text-sm text-white flex items-center justify-center gap-2 cursor-pointer shadow-lg transition-all bg-gradient-to-r ${activeColorObj.value}`}
-              style={{ boxShadow: `0 4px 20px ${activeColorObj.shadow}` }}
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Authenticating...
-                </>
-              ) : (
-                <>
-                  Enter Accountability Board
-                  <ArrowRight className="w-4 h-4" />
-                </>
-              )}
-            </button>
-          </form>
+              {/* Submit CTA Button with Button-in-Button Trailing Icon */}
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="group relative w-full rounded-full py-2.5 px-2.5 pl-6 font-semibold text-xs text-white flex items-center justify-between transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-[0.98] cursor-pointer overflow-hidden border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.5)]"
+              >
+                <div className={`absolute inset-0 bg-gradient-to-r ${activeColorObj.value} opacity-90 group-hover:opacity-100 transition-opacity duration-500`} />
+                <span className="relative z-10 tracking-wider">
+                  {isSubmitting ? 'VERIFYING CREDENTIALS...' : 'ENTER ACCOUNTABILITY CORE'}
+                </span>
+                <span className="relative z-10 w-8 h-8 rounded-full bg-black/15 flex items-center justify-center transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:translate-x-1 group-hover:-translate-y-[1px] group-hover:scale-105">
+                  {isSubmitting ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-white" strokeWidth={1.5} />
+                  ) : (
+                    <ArrowRight className="w-3.5 h-3.5 text-white" strokeWidth={1.5} />
+                  )}
+                </span>
+              </button>
+            </form>
+          </div>
         </motion.div>
-      </div>
+      </motion.div>
     </div>
   );
 }

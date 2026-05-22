@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Play, Check, RotateCcw, Trash2, Edit2, CheckCircle2, Circle, Clock } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Play, Check, RotateCcw, Trash2, Edit2, CheckCircle2, Circle, Clock, CheckCircle } from 'lucide-react';
 import { Task } from '@/lib/db';
 
 interface TaskCardProps {
@@ -65,25 +65,34 @@ export function TaskCard({ task, currentUserId, isReadOnly = false, onUpdate, on
     }
   };
 
-  // Status visual configurations
+  // Status visual configurations with desaturated, premium colors and highlights
   const statusConfig = {
     todo: {
-      borderColor: 'border-slate-800/80',
-      bgColor: 'bg-slate-900/40',
-      glowClass: 'glow-todo',
-      indicatorColor: 'text-slate-400',
+      outerBorder: 'border-white/5',
+      outerBg: 'bg-white/[0.01]',
+      innerBg: 'bg-zinc-950/40',
+      innerBorder: 'border-white/5',
+      textColor: 'text-zinc-200',
+      indicatorColor: 'text-zinc-500',
+      accentGlow: 'rgba(255, 255, 255, 0.01)',
     },
     working: {
-      borderColor: 'border-amber-500/50',
-      bgColor: 'bg-amber-950/20',
-      glowClass: 'glow-working',
-      indicatorColor: 'text-amber-400',
+      outerBorder: 'border-amber-500/20',
+      outerBg: 'bg-amber-500/[0.02]',
+      innerBg: 'bg-amber-950/20',
+      innerBorder: 'border-amber-500/10',
+      textColor: 'text-amber-100',
+      indicatorColor: 'text-amber-400/90',
+      accentGlow: 'rgba(245, 158, 11, 0.08)',
     },
     done: {
-      borderColor: 'border-emerald-500/40',
-      bgColor: 'bg-emerald-950/10',
-      glowClass: 'glow-done',
-      indicatorColor: 'text-emerald-400',
+      outerBorder: 'border-emerald-500/20',
+      outerBg: 'bg-emerald-500/[0.01]',
+      innerBg: 'bg-emerald-950/15',
+      innerBorder: 'border-emerald-500/10',
+      textColor: 'text-zinc-400 line-through decoration-emerald-800/60',
+      indicatorColor: 'text-emerald-400/90',
+      accentGlow: 'rgba(16, 185, 129, 0.06)',
     },
   };
 
@@ -92,15 +101,22 @@ export function TaskCard({ task, currentUserId, isReadOnly = false, onUpdate, on
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, scale: 0.95 }}
-      transition={{ duration: 0.25, ease: 'easeOut' }}
-      className={`relative w-full rounded-xl p-4 border glass-card ${currentConfig.borderColor} ${currentConfig.bgColor} ${currentConfig.glowClass}`}
+      initial={{ opacity: 0, y: 15, filter: 'blur(4px)' }}
+      animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+      exit={{ opacity: 0, scale: 0.96 }}
+      transition={{ 
+        type: 'spring',
+        stiffness: 120,
+        damping: 20
+      }}
+      className={`relative w-full rounded-2xl p-1 border ${currentConfig.outerBorder} ${currentConfig.outerBg} transition-all duration-500`}
+      style={{
+        boxShadow: `0 8px 32px 0 rgba(0, 0, 0, 0.25), inset 0 1px 0 0 rgba(255, 255, 255, 0.02), 0 0 20px ${currentConfig.accentGlow}`
+      }}
     >
-      <div className="flex flex-col gap-3">
+      <div className={`rounded-[calc(1rem-0.125rem)] p-3 sm:p-4 border ${currentConfig.innerBorder} ${currentConfig.innerBg} space-y-3.5`}>
         {/* Task Text & Input */}
-        <div className="flex-1 min-w-0 pr-1">
+        <div className="flex-1 min-w-0">
           {isEditing ? (
             <input
               ref={inputRef}
@@ -110,13 +126,11 @@ export function TaskCard({ task, currentUserId, isReadOnly = false, onUpdate, on
               onBlur={handleSaveText}
               onKeyDown={handleKeyDown}
               disabled={isSubmitting}
-              className="w-full bg-slate-950/80 border border-slate-700 rounded-lg px-2.5 py-1.5 text-sm text-slate-100 focus:outline-none focus:border-indigo-500 transition-colors"
+              className="w-full bg-[#050505]/60 border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-zinc-100 focus:outline-none focus:border-white/20 transition-all"
             />
           ) : (
             <p
-              className={`text-[15px] font-medium leading-relaxed break-words select-text ${
-                task.status === 'done' ? 'text-slate-500 line-through' : 'text-slate-200'
-              }`}
+              className={`text-xs sm:text-[13px] font-medium leading-relaxed break-words select-text ${currentConfig.textColor}`}
               onDoubleClick={() => isOwner && setIsEditing(true)}
             >
               {task.text}
@@ -125,21 +139,21 @@ export function TaskCard({ task, currentUserId, isReadOnly = false, onUpdate, on
         </div>
 
         {/* Card Footer: Metadata and Action Controls */}
-        <div className="flex items-center justify-between border-t border-slate-800/60 pt-2.5 mt-1 text-xs">
-          <div className="flex items-center gap-1.5 text-slate-500">
+        <div className="flex items-center justify-between border-t border-white/5 pt-3 text-[10px]">
+          <div className="flex items-center gap-1.5 font-mono">
             {task.status === 'working' ? (
-              <span className="flex items-center gap-1 text-amber-400/90 font-medium">
-                <Clock className="w-3.5 h-3.5 animate-spin" style={{ animationDuration: '4s' }} />
+              <span className={`flex items-center gap-1.5 ${currentConfig.indicatorColor} font-semibold uppercase tracking-wider`}>
+                <Clock className="w-3.5 h-3.5 animate-spin" style={{ animationDuration: '6s' }} strokeWidth={1.5} />
                 <span>Working</span>
               </span>
             ) : task.status === 'done' ? (
-              <span className="flex items-center gap-1 text-emerald-400/90 font-medium">
-                <CheckCircle2 className="w-3.5 h-3.5" />
-                <span>Completed</span>
+              <span className={`flex items-center gap-1.5 ${currentConfig.indicatorColor} font-semibold uppercase tracking-wider`}>
+                <CheckCircle2 className="w-3.5 h-3.5" strokeWidth={1.5} />
+                <span>Done</span>
               </span>
             ) : (
-              <span className="flex items-center gap-1">
-                <Circle className="w-3.5 h-3.5" />
+              <span className="flex items-center gap-1.5 text-zinc-500 font-semibold uppercase tracking-wider">
+                <Circle className="w-3.5 h-3.5" strokeWidth={1.5} />
                 <span>Todo</span>
               </span>
             )}
@@ -147,23 +161,23 @@ export function TaskCard({ task, currentUserId, isReadOnly = false, onUpdate, on
 
           {/* Action Buttons for Task Owner */}
           {isOwner && (
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1">
               {/* Status transition triggers */}
               {task.status === 'todo' && (
                 <>
                   <button
                     onClick={() => handleStatusChange('working')}
                     title="Start Working"
-                    className="p-1.5 rounded-lg bg-slate-800 hover:bg-amber-500/20 text-slate-400 hover:text-amber-400 border border-slate-700/60 hover:border-amber-500/30 transition-all cursor-pointer"
+                    className="p-1 rounded-md bg-white/5 hover:bg-amber-500/10 text-zinc-400 hover:text-amber-400 border border-white/5 hover:border-amber-500/20 transition-all cursor-pointer active:scale-90"
                   >
-                    <Play className="w-3.5 h-3.5 fill-current" />
+                    <Play className="w-3 h-3 fill-current" strokeWidth={1.5} />
                   </button>
                   <button
                     onClick={() => handleStatusChange('done')}
                     title="Mark Done"
-                    className="p-1.5 rounded-lg bg-slate-800 hover:bg-emerald-500/20 text-slate-400 hover:text-emerald-400 border border-slate-700/60 hover:border-emerald-500/30 transition-all cursor-pointer"
+                    className="p-1 rounded-md bg-white/5 hover:bg-emerald-500/10 text-zinc-400 hover:text-emerald-400 border border-white/5 hover:border-emerald-500/20 transition-all cursor-pointer active:scale-90"
                   >
-                    <Check className="w-3.5 h-3.5" />
+                    <Check className="w-3 h-3" strokeWidth={1.5} />
                   </button>
                 </>
               )}
@@ -173,16 +187,16 @@ export function TaskCard({ task, currentUserId, isReadOnly = false, onUpdate, on
                   <button
                     onClick={() => handleStatusChange('todo')}
                     title="Move back to Todo"
-                    className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-slate-200 border border-slate-700/60 transition-all cursor-pointer"
+                    className="p-1 rounded-md bg-white/5 hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200 border border-white/5 transition-all cursor-pointer active:scale-90"
                   >
-                    <RotateCcw className="w-3.5 h-3.5" />
+                    <RotateCcw className="w-3 h-3" strokeWidth={1.5} />
                   </button>
                   <button
                     onClick={() => handleStatusChange('done')}
                     title="Mark Done"
-                    className="p-1.5 rounded-lg bg-slate-800 hover:bg-emerald-500/20 text-slate-400 hover:text-emerald-400 border border-slate-700/60 hover:border-emerald-500/30 transition-all cursor-pointer"
+                    className="p-1 rounded-md bg-white/5 hover:bg-emerald-500/10 text-zinc-400 hover:text-emerald-400 border border-white/5 hover:border-emerald-500/20 transition-all cursor-pointer active:scale-90"
                   >
-                    <Check className="w-3.5 h-3.5" />
+                    <Check className="w-3 h-3" strokeWidth={1.5} />
                   </button>
                 </>
               )}
@@ -191,30 +205,30 @@ export function TaskCard({ task, currentUserId, isReadOnly = false, onUpdate, on
                 <button
                   onClick={() => handleStatusChange('todo')}
                   title="Re-open Task"
-                  className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-slate-200 border border-slate-700/60 transition-all cursor-pointer"
+                  className="p-1 rounded-md bg-white/5 hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200 border border-white/5 transition-all cursor-pointer active:scale-90"
                 >
-                  <RotateCcw className="w-3.5 h-3.5" />
+                  <RotateCcw className="w-3 h-3" strokeWidth={1.5} />
                 </button>
               )}
 
-              <div className="h-4 w-px bg-slate-800/80 mx-0.5" />
+              <div className="h-3.5 w-px bg-white/5 mx-1" />
 
               {/* Edit text */}
               <button
                 onClick={() => setIsEditing(!isEditing)}
                 title="Edit Text"
-                className="p-1.5 rounded-lg hover:bg-slate-800 text-slate-500 hover:text-indigo-400 transition-colors cursor-pointer"
+                className="p-1 rounded-md text-zinc-500 hover:text-white transition-colors cursor-pointer active:scale-90"
               >
-                <Edit2 className="w-3.5 h-3.5" />
+                <Edit2 className="w-3 h-3" strokeWidth={1.5} />
               </button>
 
               {/* Delete Task */}
               <button
                 onClick={() => onDelete(task.id)}
                 title="Delete Task"
-                className="p-1.5 rounded-lg hover:bg-rose-950/30 text-slate-500 hover:text-rose-400 transition-colors cursor-pointer"
+                className="p-1 rounded-md text-zinc-500 hover:text-rose-400 transition-colors cursor-pointer active:scale-90"
               >
-                <Trash2 className="w-3.5 h-3.5" />
+                <Trash2 className="w-3 h-3" strokeWidth={1.5} />
               </button>
             </div>
           )}
