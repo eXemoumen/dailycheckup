@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Play, Check, RotateCcw, Trash2, Edit2, CheckCircle2, Circle, Clock, CheckCircle } from 'lucide-react';
+import { Play, Check, RotateCcw, Trash2, Edit2, CheckCircle2, Circle, Clock } from 'lucide-react';
 import { Task } from '@/lib/db';
 
 interface TaskCardProps {

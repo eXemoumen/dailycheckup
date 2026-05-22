@@ -69,7 +69,7 @@ export function getLocalDateString(timezone = 'Africa/Algiers'): string {
       day: '2-digit',
     });
     return formatter.format(new Date());
-  } catch (e) {
+  } catch {
     // Fallback if timezone is invalid
     const d = new Date();
     return d.toISOString().split('T')[0];

@@ -119,7 +119,7 @@ export default function Home() {
         } else {
           setIsPageLoading(false);
         }
-      } catch (err) {
+      } catch {
         setIsPageLoading(false);
       }
     }
@@ -164,8 +164,9 @@ export default function Home() {
       }
 
       router.push('/board');
-    } catch (err: any) {
-      setError(err.message || 'Something went wrong.');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Something went wrong.';
+      setError(message);
       setIsSubmitting(false);
     }
   };
@@ -329,7 +330,7 @@ export default function Home() {
                       {COLORS.map((col) => (
                         <button
                           key={col.id}
-                          type="button; button"
+                          type="button"
                           onClick={() => setSelectedColor(col.id)}
                           title={col.name}
                           className={`h-7 w-full rounded-lg bg-gradient-to-r ${col.value} relative overflow-hidden transition-all duration-300 hover:scale-105 cursor-pointer border border-white/5`}

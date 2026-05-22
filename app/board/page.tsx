@@ -1,11 +1,11 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  LogOut, Calendar, Plus, Loader2, RefreshCw, CheckCircle, 
-  ListTodo, TrendingUp, AlertTriangle, Activity, CheckSquare, Users,
+  LogOut, Calendar, Plus, Loader2, RefreshCw, 
+  ListTodo, AlertTriangle, Activity, CheckSquare, Users,
   Terminal, Zap, Coffee, Gamepad2, Palette, Book, 
   Target, Flame, Brain, Rocket, Trophy, Compass, 
   Shield, Heart, Sparkles, Code
@@ -176,7 +176,7 @@ export default function Board() {
           minutes: String(minutes).padStart(2, '0'),
           seconds: String(seconds).padStart(2, '0'),
         });
-      } catch (e) {
+      } catch {
         // Local fallback
         const midnight = new Date();
         midnight.setHours(24, 0, 0, 0);
@@ -198,7 +198,7 @@ export default function Board() {
   }, []);
 
   // Fetch initial board state and check auth
-  const fetchBoardData = async (isSilent = false) => {
+  const fetchBoardData = useCallback(async (isSilent = false) => {
     if (isFetchingRef.current) return;
     isFetchingRef.current = true;
     if (!isSilent) setLoading(true);
@@ -235,22 +235,25 @@ export default function Board() {
       setSyncing(false);
       isFetchingRef.current = false;
     }
-  };
+  }, [currentUser, activeMobileUserId, router]);
 
   // Setup periodic short-polling
   useEffect(() => {
-    fetchBoardData();
+    const timer = setTimeout(() => {
+      fetchBoardData();
+    }, 0);
 
     pollingRef.current = setInterval(() => {
       fetchBoardData(true);
     }, 4000);
 
     return () => {
+      clearTimeout(timer);
       if (pollingRef.current) {
         clearInterval(pollingRef.current);
       }
     };
-  }, [currentUser]);
+  }, [fetchBoardData]);
 
   // Logout Handler
   const handleLogout = async () => {

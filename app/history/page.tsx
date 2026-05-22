@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { 
   ArrowLeft, Calendar as CalendarIcon, Loader2, ListTodo, AlertTriangle, CheckSquare, Activity, Users,
@@ -117,7 +117,7 @@ export default function History() {
   const [activeMobileUserId, setActiveMobileUserId] = useState<string | null>(null);
 
   // Fetch Board details for selected date
-  const fetchHistoryBoard = async (dateStr: string) => {
+  const fetchHistoryBoard = useCallback(async (dateStr: string) => {
     setLoading(true);
     try {
       // 1. Verify User Profile
@@ -147,11 +147,14 @@ export default function History() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentUser, activeMobileUserId, router]);
 
   useEffect(() => {
-    fetchHistoryBoard(selectedDate);
-  }, [selectedDate]);
+    const timer = setTimeout(() => {
+      fetchHistoryBoard(selectedDate);
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [selectedDate, fetchHistoryBoard]);
 
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.value) {
@@ -160,8 +163,13 @@ export default function History() {
   };
 
   // Helper placeholder update functions for Read-Only cards
-  const noopUpdate = async () => {};
-  const noopDelete = async () => {};
+  const noopUpdate = async (id: string, updates: Partial<Pick<Task, 'status' | 'text'>>) => {
+    void id;
+    void updates;
+  };
+  const noopDelete = async (id: string) => {
+    void id;
+  };
 
   // Stats calculation
   const totalTasksCount = tasks.length;

@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { getUserById } from '@/lib/db';
+import { getUserById, User } from '@/lib/db';
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
     const cookieStore = await cookies();
     const userId = cookieStore.get('session')?.value;
@@ -25,7 +25,8 @@ export async function GET(req: NextRequest) {
     }
 
     // Return user without PIN for security
-    const { pin, ...userWithoutPin } = user;
+    const userWithoutPin = { ...user };
+    delete (userWithoutPin as Partial<User>).pin;
     return NextResponse.json({ user: userWithoutPin });
   } catch (error) {
     console.error('Auth check error:', error);
@@ -41,7 +42,7 @@ export async function DELETE() {
     const cookieStore = await cookies();
     cookieStore.delete('session');
     return NextResponse.json({ success: true });
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: 'Failed to log out.' },
       { status: 500 }

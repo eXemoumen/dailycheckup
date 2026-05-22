@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { getBoardTasks, getAllUsers, addTask, getLocalDateString, getUserById } from '@/lib/db';
+import { getBoardTasks, getAllUsers, addTask, getLocalDateString, getUserById, User } from '@/lib/db';
 
 export async function GET(req: NextRequest) {
   try {
@@ -23,7 +23,11 @@ export async function GET(req: NextRequest) {
     ]);
 
     // Sanitize user passwords/pins out of the response
-    const sanitizedUsers = users.map(({ pin, ...u }) => u);
+    const sanitizedUsers = users.map(u => {
+      const sanitized = { ...u };
+      delete (sanitized as Partial<User>).pin;
+      return sanitized;
+    });
 
     return NextResponse.json({
       date: dateStr,
